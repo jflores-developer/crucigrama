@@ -1,0 +1,8 @@
+{
+  "name": "Remix Crucigrama Pro - Generador, Juego Incrustable y Récords",
+  "description": "Generador avanzado de crucigramas interactivos para jugar en la web o incrustar en sitios externos con biblioteca de crucigramas. Cada crucigrama generado debe poder ser incrustado de forma independiente sin tener acceso al generador. debe haber por lo menos 1000 palabras diferentes de temas variados, los crucigramas deben tener entre 12 y 20 palabras cada uno, cada crucigrama puede ser temático o variado.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

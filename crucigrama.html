@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Mini Página Puzzle</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background-color: #f4f4f4;
+    }
+    header {
+      background: #333;
+      color: #fff;
+      padding: 10px;
+      width: 100%;
+      text-align: center;
+    }
+    iframe {
+      border: none;
+      width: 90%;
+      height: 600px;
+      margin-top: 20px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Mini Página con Puzzle Embebido</h1>
+  </header>
+  
+  <iframe src="http://localhost:3000/?embed=true&puzzle=seed_musica-arte"></iframe>
+</body>
+</html>
