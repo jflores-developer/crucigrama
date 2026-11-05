@@ -49,3 +49,20 @@
 .scrollbar-thin::-webkit-scrollbar-thumb:hover {
   background: #a8a29e;
 }
+
+/* Touch & mobile optimizations */
+.touch-action-manipulation {
+  touch-action: manipulation;
+}
+
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Prevent double-tap zoom delay on virtual keyboard keys */
+.virtual-key {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+

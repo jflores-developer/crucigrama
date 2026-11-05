@@ -15,6 +15,9 @@ import {
   ChevronUp,
 } from 'lucide-react';
 
+import { AdminAuthService } from '../services/adminAuthService';
+import { getAppBaseUrl } from '../utils/urlUtils';
+
 interface EmbedCodeModalProps {
   puzzle: CrosswordPuzzle;
   onClose: () => void;
@@ -28,13 +31,15 @@ export const EmbedCodeModal: React.FC<EmbedCodeModalProps> = ({ puzzle, onClose 
   const [previewDevice, setPreviewDevice] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
   const [showGoogleSitesGuide, setShowGoogleSitesGuide] = useState(true);
 
-  // Origins: Dev vs Public Shared App URL
-  const currentOrigin = typeof window !== 'undefined' ? window.location.origin : '';
-  const isDevOrigin = currentOrigin.includes('ais-dev-');
-  const publicOrigin = currentOrigin.replace('ais-dev-', 'ais-pre-');
+  // Base URL with subpath detection (essential for GitHub Pages e.g. /repo-name/)
+  const currentBase = typeof window !== 'undefined' ? getAppBaseUrl(false) : '';
+  const publicBase = typeof window !== 'undefined' ? getAppBaseUrl(true) : '';
+  const isDevOrigin = currentBase.includes('ais-dev-');
+  const isGitHubPages = typeof window !== 'undefined' && window.location.hostname.endsWith('github.io');
+  
   const [urlMode, setUrlMode] = useState<'public' | 'current'>(isDevOrigin ? 'public' : 'current');
 
-  const selectedOrigin = urlMode === 'public' && isDevOrigin ? publicOrigin : currentOrigin;
+  const selectedBase = urlMode === 'public' && isDevOrigin ? publicBase : currentBase;
 
   // Build portable payload for custom or dynamically generated puzzles
   let urlParams = `embed=true&puzzle=${encodeURIComponent(puzzle.id)}`;
@@ -64,7 +69,7 @@ export const EmbedCodeModal: React.FC<EmbedCodeModalProps> = ({ puzzle, onClose 
     }
   }
 
-  const embedUrl = `${selectedOrigin}/?${urlParams}`;
+  const embedUrl = `${selectedBase}/?${urlParams}`;
 
   const iframeSnippet = `<iframe
   src="${embedUrl}"
@@ -176,6 +181,16 @@ export const EmbedCodeModal: React.FC<EmbedCodeModalProps> = ({ puzzle, onClose 
                 URL Actual (ais-dev)
               </button>
             </div>
+          </div>
+        )}
+
+        {/* GitHub Pages detection badge */}
+        {isGitHubPages && (
+          <div className="bg-emerald-50 border border-emerald-300 rounded-xl p-2.5 text-xs text-emerald-950 flex items-center gap-2">
+            <span className="text-emerald-700 font-bold">✓ GitHub Pages detectado:</span>
+            <span className="text-[11px] text-emerald-800">
+              Se preserva automáticamente la ruta del repositorio (<code className="bg-white/80 px-1 py-0.5 rounded font-mono text-emerald-900 border border-emerald-200">{selectedBase}</code>) para evitar el error 404.
+            </span>
           </div>
         )}
 
@@ -351,7 +366,7 @@ export const EmbedCodeModal: React.FC<EmbedCodeModalProps> = ({ puzzle, onClose 
               style={{ width: getPreviewWidth(), height: '260px' }}
             >
               <iframe
-                src={`${currentOrigin}/?${urlParams}`}
+                src={`${currentBase}/?${urlParams}`}
                 title="Vista previa crucigrama"
                 className="w-full h-full border-0"
               />

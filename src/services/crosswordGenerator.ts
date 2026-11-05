@@ -472,7 +472,10 @@ export async function generateCrosswordFromTopicWithAI(
   difficulty: DifficultyLevel = 'Medio',
   wordCount = 10
 ): Promise<CrosswordPuzzle> {
-  const apiKey = process.env.GEMINI_API_KEY || (typeof window !== 'undefined' ? (window as unknown as { GEMINI_API_KEY?: string }).GEMINI_API_KEY : '');
+  const apiKey =
+    (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_GEMINI_API_KEY) ||
+    process.env.GEMINI_API_KEY ||
+    (typeof window !== 'undefined' ? (window as unknown as { GEMINI_API_KEY?: string }).GEMINI_API_KEY : '');
 
   if (apiKey) {
     try {

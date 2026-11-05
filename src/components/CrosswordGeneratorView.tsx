@@ -34,6 +34,7 @@ import {
   X,
 } from 'lucide-react';
 import { AdminAuthService } from '../services/adminAuthService';
+import { getAppBaseUrl } from '../utils/urlUtils';
 
 interface CrosswordGeneratorViewProps {
   puzzles: CrosswordPuzzle[];
@@ -210,8 +211,8 @@ export const CrosswordGeneratorView: React.FC<CrosswordGeneratorViewProps> = ({
 
   // Quick copy snippet
   const handleQuickCopySnippet = (puzzle: CrosswordPuzzle) => {
-    const origin = typeof window !== 'undefined' ? window.location.origin : '';
-    const embedUrl = `${origin}/?embed=true&puzzle=${puzzle.id}`;
+    const base = getAppBaseUrl(true);
+    const embedUrl = `${base}/?embed=true&puzzle=${puzzle.id}`;
     const snippet = `<iframe src="${embedUrl}" width="100%" height="720" frameborder="0" style="border:0;max-width:100%;border-radius:12px;overflow:hidden;" allow="clipboard-write" allowfullscreen title="Crucigrama: ${puzzle.title}"></iframe>`;
     
     if (navigator.clipboard) {
@@ -243,8 +244,8 @@ export const CrosswordGeneratorView: React.FC<CrosswordGeneratorViewProps> = ({
   };
 
   const handleCopySecretAdminLink = () => {
-    const origin = typeof window !== 'undefined' ? window.location.origin : '';
-    const secretUrl = AdminAuthService.getSecretAdminUrl(origin);
+    const base = getAppBaseUrl(true);
+    const secretUrl = AdminAuthService.getSecretAdminUrl(base);
     if (navigator.clipboard) {
       navigator.clipboard.writeText(secretUrl);
       setCopiedAdminLink(true);

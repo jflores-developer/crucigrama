@@ -1,18 +1,8 @@
-# Dependencias (NUNCA se suben a GitHub)
 node_modules/
-jspm_packages/
-
-# Carpetas de compilación (Se generan con npm run build)
-dist/
 build/
-
-# Variables de entorno y contraseñas secretas
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# Archivos basura del sistema operativo
+dist/
+coverage/
 .DS_Store
-Thumbs.db
+*.log
+.env*
+!.env.example

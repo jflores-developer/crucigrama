@@ -39,7 +39,14 @@ export const CrosswordGame: React.FC<CrosswordGameProps> = ({
   onGoToLibrary,
   onGenerateNew,
 }) => {
-  // State
+  // Detect mobile or touch device for auto-enabling virtual keyboard
+  const isTouchDevice = typeof window !== 'undefined' && (
+    'ontouchstart' in window ||
+    navigator.maxTouchPoints > 0 ||
+    window.innerWidth < 1024
+  );
+
+
   const [userGrid, setUserGrid] = useState<Record<string, string>>({});
   const [revealedCells, setRevealedCells] = useState<Record<string, boolean>>({});
   const [wrongCells, setWrongCells] = useState<Record<string, boolean>>({});
@@ -47,7 +54,8 @@ export const CrosswordGame: React.FC<CrosswordGameProps> = ({
   const [direction, setDirection] = useState<Direction>('across');
   const [zoom, setZoom] = useState(1.0);
   const [gridStyle, setGridStyle] = useState<'eco' | 'classic'>('eco');
-  const [showKeyboard, setShowKeyboard] = useState(false);
+  // Auto-show keyboard on phones / tablets by default
+  const [showKeyboard, setShowKeyboard] = useState(isTouchDevice);
   const [showPdfModal, setShowPdfModal] = useState(false);
 
   // Stats & Timer
@@ -502,7 +510,7 @@ export const CrosswordGame: React.FC<CrosswordGameProps> = ({
   };
 
   return (
-    <div className={`w-full max-w-7xl mx-auto flex flex-col ${isEmbedded ? 'p-2 sm:p-3' : 'p-3 sm:p-5'}`}>
+    <div className={`w-full max-w-7xl mx-auto flex flex-col transition-all ${isEmbedded ? 'p-1.5 sm:p-3' : 'p-2.5 sm:p-5'} ${showKeyboard ? 'pb-44 sm:pb-48' : ''}`}>
       {/* Top Header & Navigation Bar */}
       <div className="bg-white rounded-2xl border border-stone-200 shadow-xs p-3 sm:p-4 mb-3 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
@@ -717,13 +725,15 @@ export const CrosswordGame: React.FC<CrosswordGameProps> = ({
         </div>
       </div>
 
-      {/* Virtual Keyboard (Toggled or on small screen) */}
+      {/* Virtual Keyboard (Toggled or auto on touch/mobile devices) */}
       {showKeyboard && (
-        <div className="fixed bottom-0 left-0 right-0 z-40 animate-in slide-in-from-bottom duration-200">
+        <div className="fixed bottom-0 left-0 right-0 z-40 animate-in slide-in-from-bottom duration-150">
           <VirtualKeyboard
             onKeyPress={handleInputChar}
             onBackspace={handleBackspace}
             onToggleDirection={() => setDirection(d => (d === 'across' ? 'down' : 'across'))}
+            onNextClue={() => jumpToNextClue(1)}
+            onClose={() => setShowKeyboard(false)}
             direction={direction}
           />
         </div>

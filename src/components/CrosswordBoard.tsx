@@ -63,13 +63,20 @@ export const CrosswordBoard: React.FC<CrosswordBoardProps> = ({
     }
   };
 
-  // Base cell pixel size
-  const baseSize = Math.max(28, Math.min(44, Math.floor(480 / Math.max(rows, cols))));
+  // Base cell pixel size responsive to viewport
+  const isSmallScreen = typeof window !== 'undefined' && window.innerWidth < 640;
+  const maxBoardWidth = typeof window !== 'undefined' 
+    ? Math.min(window.innerWidth - (isSmallScreen ? 32 : 80), 520) 
+    : 440;
+  const computedBase = Math.floor(maxBoardWidth / Math.max(rows, cols));
+  // Keep cells touch-friendly: minimum 26px up to 44px
+  const baseSize = Math.max(26, Math.min(44, computedBase));
   const cellSize = Math.round(baseSize * zoom);
 
   return (
     <div className="flex flex-col items-center w-full select-none">
       {/* Board zoom & style toolbar */}
+
       <div className="flex items-center justify-between w-full max-w-lg mb-2 px-1 text-xs text-stone-500 no-print">
         <span className="font-mono">
           {rows}×{cols} casillas · {puzzle.clues.length} pistas
@@ -133,21 +140,21 @@ export const CrosswordBoard: React.FC<CrosswordBoardProps> = ({
         ref={boardRef}
         tabIndex={0}
         onKeyDown={onKeyDown}
-        className={`outline-hidden overflow-auto max-w-full p-3 rounded-2xl transition-colors duration-150 flex justify-center items-center ${
+        className={`outline-hidden overflow-auto max-w-full p-2 sm:p-3 rounded-2xl transition-colors duration-150 flex justify-center items-center touch-action-manipulation scrollbar-thin ${
           gridStyle === 'eco'
             ? 'bg-stone-100/70 border border-stone-200 shadow-xs print:bg-transparent print:border-0 print:p-0'
             : 'bg-stone-200/90 border border-stone-300 shadow-inner'
         }`}
-        style={{ touchAction: 'manipulation' }}
       >
         <div
           role="grid"
           aria-label="Cuadrícula del crucigrama"
-          className={`grid gap-[1px] transition-all ${
+          className={`grid gap-[1px] transition-all select-none ${
             gridStyle === 'eco'
               ? 'bg-transparent border-0 print:border-0'
               : 'bg-stone-800 border-2 border-stone-800 shadow-md rounded-xs'
           }`}
+
           style={{
             gridTemplateColumns: `repeat(${cols}, ${cellSize}px)`,
             gridTemplateRows: `repeat(${rows}, ${cellSize}px)`,
