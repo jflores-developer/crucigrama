@@ -66,11 +66,11 @@ export const CrosswordBoard: React.FC<CrosswordBoardProps> = ({
   // Base cell pixel size responsive to viewport
   const isSmallScreen = typeof window !== 'undefined' && window.innerWidth < 640;
   const maxBoardWidth = typeof window !== 'undefined' 
-    ? Math.min(window.innerWidth - (isSmallScreen ? 32 : 80), 520) 
+    ? Math.min(window.innerWidth - (isSmallScreen ? 24 : 80), 500) 
     : 440;
   const computedBase = Math.floor(maxBoardWidth / Math.max(rows, cols));
-  // Keep cells touch-friendly: minimum 26px up to 44px
-  const baseSize = Math.max(26, Math.min(44, computedBase));
+  // Keep cells touch-friendly and proportioned to mobile viewport
+  const baseSize = Math.max(20, Math.min(42, computedBase));
   const cellSize = Math.round(baseSize * zoom);
 
   return (

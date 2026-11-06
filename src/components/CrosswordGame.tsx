@@ -22,6 +22,7 @@ import {
   Sparkles,
   Printer,
   FileDown,
+  BookOpen,
 } from 'lucide-react';
 
 interface CrosswordGameProps {
@@ -56,6 +57,9 @@ export const CrosswordGame: React.FC<CrosswordGameProps> = ({
   const [gridStyle, setGridStyle] = useState<'eco' | 'classic'>('eco');
   // Auto-show keyboard on phones / tablets by default
   const [showKeyboard, setShowKeyboard] = useState(isTouchDevice);
+  // Default to 'inline' so keyboard is directly under the board and always in viewport on mobile/embedded
+  const [keyboardDock, setKeyboardDock] = useState<'inline' | 'fixed'>('inline');
+  const [showMobileClues, setShowMobileClues] = useState(false);
   const [showPdfModal, setShowPdfModal] = useState(false);
 
   // Stats & Timer
@@ -510,7 +514,7 @@ export const CrosswordGame: React.FC<CrosswordGameProps> = ({
   };
 
   return (
-    <div className={`w-full max-w-7xl mx-auto flex flex-col transition-all ${isEmbedded ? 'p-1.5 sm:p-3' : 'p-2.5 sm:p-5'} ${showKeyboard ? 'pb-44 sm:pb-48' : ''}`}>
+    <div className={`w-full max-w-7xl mx-auto flex flex-col transition-all ${isEmbedded ? 'p-1.5 sm:p-3' : 'p-2 sm:p-5'} ${showKeyboard && keyboardDock === 'fixed' ? 'pb-44 sm:pb-48' : ''}`}>
       {/* Top Header & Navigation Bar */}
       <div className="bg-white rounded-2xl border border-stone-200 shadow-xs p-3 sm:p-4 mb-3 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
@@ -686,7 +690,7 @@ export const CrosswordGame: React.FC<CrosswordGameProps> = ({
       {/* Main Game Arena: Grid + Clues Panel */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
         {/* Crossword Board column */}
-        <div className="lg:col-span-7 flex flex-col items-center">
+        <div className="lg:col-span-7 flex flex-col items-center w-full">
           <CrosswordBoard
             puzzle={puzzle}
             userGrid={userGrid}
@@ -703,6 +707,22 @@ export const CrosswordGame: React.FC<CrosswordGameProps> = ({
             onToggleGridStyle={() => setGridStyle(s => (s === 'eco' ? 'classic' : 'eco'))}
           />
 
+          {/* Virtual Keyboard docked directly below the board (ideal for mobile / tablet / embeds) */}
+          {showKeyboard && keyboardDock === 'inline' && (
+            <div className="w-full mt-2 animate-in fade-in duration-150">
+              <VirtualKeyboard
+                onKeyPress={handleInputChar}
+                onBackspace={handleBackspace}
+                onToggleDirection={() => setDirection(d => (d === 'across' ? 'down' : 'across'))}
+                onNextClue={() => jumpToNextClue(1)}
+                onClose={() => setShowKeyboard(false)}
+                direction={direction}
+                dockMode="inline"
+                onToggleDock={() => setKeyboardDock('fixed')}
+              />
+            </div>
+          )}
+
           {/* Quick instructions badge */}
           <div className="flex items-center gap-3 text-[11px] text-stone-400 mt-2">
             <span>Escribe para rellenar</span>
@@ -711,10 +731,39 @@ export const CrosswordGame: React.FC<CrosswordGameProps> = ({
             <span>·</span>
             <span>Tab: Siguiente pista</span>
           </div>
+
+          {/* Mobile Clues Collapsible Accordion (Only on small screens so it doesn't push the board and keyboard down) */}
+          <div className="lg:hidden w-full max-w-xl mt-3">
+            <button
+              type="button"
+              onClick={() => setShowMobileClues(s => !s)}
+              className="w-full py-2.5 px-3.5 bg-white hover:bg-stone-50 active:bg-amber-50/60 border border-stone-200 rounded-xl text-xs font-semibold text-stone-700 flex items-center justify-between shadow-xs transition cursor-pointer"
+            >
+              <span className="flex items-center gap-2">
+                <BookOpen className="w-4 h-4 text-amber-600" />
+                <span>{showMobileClues ? 'Ocultar lista de definiciones' : 'Ver lista completa de definiciones'}</span>
+              </span>
+              <span className="text-[11px] font-mono text-stone-500 bg-stone-100 px-2 py-0.5 rounded-md">
+                {completedClueIds.size}/{puzzle.clues.length} resueltas
+              </span>
+            </button>
+
+            {showMobileClues && (
+              <div className="mt-2 animate-in fade-in slide-in-from-top-1 duration-150">
+                <CluesPanel
+                  clues={puzzle.clues}
+                  activeClue={activeClue}
+                  completedClueIds={completedClueIds}
+                  onSelectClue={handleSelectClue}
+                  compact={true}
+                />
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Clues Panel column */}
-        <div className="lg:col-span-5 flex flex-col">
+        {/* Clues Panel column on Desktop (always visible side-by-side) */}
+        <div className="hidden lg:flex lg:col-span-5 flex-col">
           <CluesPanel
             clues={puzzle.clues}
             activeClue={activeClue}
@@ -725,8 +774,8 @@ export const CrosswordGame: React.FC<CrosswordGameProps> = ({
         </div>
       </div>
 
-      {/* Virtual Keyboard (Toggled or auto on touch/mobile devices) */}
-      {showKeyboard && (
+      {/* Virtual Keyboard (Fixed at bottom when dockMode === 'fixed') */}
+      {showKeyboard && keyboardDock === 'fixed' && (
         <div className="fixed bottom-0 left-0 right-0 z-40 animate-in slide-in-from-bottom duration-150">
           <VirtualKeyboard
             onKeyPress={handleInputChar}
@@ -735,6 +784,8 @@ export const CrosswordGame: React.FC<CrosswordGameProps> = ({
             onNextClue={() => jumpToNextClue(1)}
             onClose={() => setShowKeyboard(false)}
             direction={direction}
+            dockMode="fixed"
+            onToggleDock={() => setKeyboardDock('inline')}
           />
         </div>
       )}

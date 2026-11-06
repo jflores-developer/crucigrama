@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { Delete, ArrowRightLeft, CornerDownLeft, X } from 'lucide-react';
+import { Delete, ArrowRightLeft, CornerDownLeft, X, Pin, Anchor } from 'lucide-react';
 import { Direction } from '../types/crossword';
 
 interface VirtualKeyboardProps {
@@ -9,6 +9,8 @@ interface VirtualKeyboardProps {
   onNextClue?: () => void;
   onClose?: () => void;
   direction: Direction;
+  dockMode?: 'inline' | 'fixed';
+  onToggleDock?: () => void;
 }
 
 export const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({
@@ -18,6 +20,8 @@ export const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({
   onNextClue,
   onClose,
   direction,
+  dockMode = 'inline',
+  onToggleDock,
 }) => {
   const row1 = ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'];
   const row2 = ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'Ñ'];
@@ -25,7 +29,7 @@ export const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({
 
   // Prevent default to avoid virtual focus loss or scrolling hiccups
   const handleKeyTrigger = useCallback(
-    (e: React.MouseEvent | React.TouchEvent, action: () => void) => {
+    (e: React.MouseEvent | React.TouchEvent | React.PointerEvent, action: () => void) => {
       e.preventDefault();
       e.stopPropagation();
       action();
@@ -34,29 +38,66 @@ export const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({
   );
 
   return (
-    <div className="bg-stone-100/98 backdrop-blur-md border-t border-stone-300 shadow-2xl p-1.5 sm:p-2.5 pb-safe select-none max-w-xl mx-auto w-full transition-all touch-action-manipulation">
+    <div
+      className={`select-none w-full max-w-xl mx-auto transition-all touch-action-manipulation ${
+        dockMode === 'inline'
+          ? 'bg-stone-100/95 border border-stone-300 rounded-2xl shadow-sm p-1.5 sm:p-2.5 my-2'
+          : 'bg-stone-100/98 backdrop-blur-md border-t border-stone-300 shadow-2xl p-1.5 sm:p-2.5 pb-safe'
+      }`}
+    >
       {/* Top mini helper bar on mobile */}
-      <div className="flex items-center justify-between px-1 mb-1 text-[11px] text-stone-500">
+      <div className="flex items-center justify-between px-1 mb-1.5 text-[11px] text-stone-600">
         <div className="flex items-center gap-1.5 font-medium">
           <span className="w-2 h-2 rounded-full bg-amber-500 inline-block animate-pulse" />
-          <span className="text-stone-700">Teclado táctil</span>
-          <span className="text-stone-400">·</span>
-          <span className="font-semibold text-amber-900">
-            {direction === 'across' ? 'Modo Horizontal →' : 'Modo Vertical ↓'}
-          </span>
-        </div>
-
-        {onClose && (
           <button
             type="button"
-            onPointerDown={(e) => handleKeyTrigger(e, onClose)}
-            className="p-1 text-stone-400 hover:text-stone-700 active:bg-stone-200 rounded-md transition-colors"
-            title="Ocultar teclado"
-            aria-label="Ocultar teclado"
+            onPointerDown={(e) => handleKeyTrigger(e, onToggleDirection)}
+            className="flex items-center gap-1 text-amber-900 bg-amber-100/80 hover:bg-amber-200/80 px-2 py-0.5 rounded-md font-semibold transition-colors cursor-pointer"
+            title="Cambiar dirección (Horizontal / Vertical)"
           >
-            <X className="w-4 h-4" />
+            <ArrowRightLeft className="w-3 h-3 text-amber-700" />
+            <span>{direction === 'across' ? 'Horizontal →' : 'Vertical ↓'}</span>
           </button>
-        )}
+        </div>
+
+        <div className="flex items-center gap-1">
+          {onToggleDock && (
+            <button
+              type="button"
+              onPointerDown={(e) => handleKeyTrigger(e, onToggleDock)}
+              className="flex items-center gap-1 px-1.5 py-0.5 text-[10px] text-stone-600 bg-stone-200/80 hover:bg-stone-300 active:bg-amber-200 rounded-md transition-colors cursor-pointer"
+              title={
+                dockMode === 'inline'
+                  ? 'Fijar teclado al pie de la pantalla'
+                  : 'Acoplar teclado directamente bajo el crucigrama'
+              }
+            >
+              {dockMode === 'inline' ? (
+                <>
+                  <Anchor className="w-3 h-3 text-stone-500" />
+                  <span className="hidden xs:inline">Fijar abajo</span>
+                </>
+              ) : (
+                <>
+                  <Pin className="w-3 h-3 text-amber-700" />
+                  <span className="hidden xs:inline">Bajo el tablero</span>
+                </>
+              )}
+            </button>
+          )}
+
+          {onClose && (
+            <button
+              type="button"
+              onPointerDown={(e) => handleKeyTrigger(e, onClose)}
+              className="p-1 text-stone-400 hover:text-stone-700 active:bg-stone-200 rounded-md transition-colors cursor-pointer"
+              title="Ocultar teclado táctil"
+              aria-label="Ocultar teclado"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Row 1 */}
@@ -66,7 +107,7 @@ export const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({
             key={key}
             type="button"
             onPointerDown={(e) => handleKeyTrigger(e, () => onKeyPress(key))}
-            className="virtual-key flex-1 min-w-[28px] max-w-[46px] h-11 sm:h-12 bg-white hover:bg-stone-100 active:bg-amber-200 active:scale-95 font-bold text-stone-900 rounded-lg border border-stone-300 shadow-xs flex items-center justify-center text-base sm:text-lg transition-transform cursor-pointer"
+            className="virtual-key flex-1 min-w-[26px] max-w-[46px] h-9.5 sm:h-11 bg-white hover:bg-stone-100 active:bg-amber-200 active:scale-95 font-bold text-stone-900 rounded-lg border border-stone-300 shadow-xs flex items-center justify-center text-sm sm:text-base transition-transform cursor-pointer"
           >
             {key}
           </button>
@@ -80,7 +121,7 @@ export const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({
             key={key}
             type="button"
             onPointerDown={(e) => handleKeyTrigger(e, () => onKeyPress(key))}
-            className="virtual-key flex-1 min-w-[28px] max-w-[46px] h-11 sm:h-12 bg-white hover:bg-stone-100 active:bg-amber-200 active:scale-95 font-bold text-stone-900 rounded-lg border border-stone-300 shadow-xs flex items-center justify-center text-base sm:text-lg transition-transform cursor-pointer"
+            className="virtual-key flex-1 min-w-[26px] max-w-[46px] h-9.5 sm:h-11 bg-white hover:bg-stone-100 active:bg-amber-200 active:scale-95 font-bold text-stone-900 rounded-lg border border-stone-300 shadow-xs flex items-center justify-center text-sm sm:text-base transition-transform cursor-pointer"
           >
             {key}
           </button>
@@ -93,10 +134,10 @@ export const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({
           type="button"
           onPointerDown={(e) => handleKeyTrigger(e, onToggleDirection)}
           title="Cambiar dirección (Horizontal / Vertical)"
-          className="virtual-key flex-[1.4] min-w-[44px] max-w-[70px] h-11 sm:h-12 bg-stone-200 hover:bg-stone-300 active:bg-amber-300 active:scale-95 text-stone-800 font-bold rounded-lg border border-stone-300 shadow-xs flex items-center justify-center gap-1 text-[11px] sm:text-xs cursor-pointer px-1 transition-transform"
+          className="virtual-key flex-[1.3] min-w-[38px] max-w-[62px] h-9.5 sm:h-11 bg-stone-200 hover:bg-stone-300 active:bg-amber-300 active:scale-95 text-stone-800 font-bold rounded-lg border border-stone-300 shadow-xs flex items-center justify-center gap-1 text-[11px] sm:text-xs cursor-pointer px-1 transition-transform"
         >
           <ArrowRightLeft className="w-3.5 h-3.5 text-stone-700" />
-          <span>{direction === 'across' ? 'Horiz' : 'Vert'}</span>
+          <span className="hidden xs:inline">{direction === 'across' ? 'Horiz' : 'Vert'}</span>
         </button>
 
         {row3.map(key => (
@@ -104,7 +145,7 @@ export const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({
             key={key}
             type="button"
             onPointerDown={(e) => handleKeyTrigger(e, () => onKeyPress(key))}
-            className="virtual-key flex-1 min-w-[28px] max-w-[46px] h-11 sm:h-12 bg-white hover:bg-stone-100 active:bg-amber-200 active:scale-95 font-bold text-stone-900 rounded-lg border border-stone-300 shadow-xs flex items-center justify-center text-base sm:text-lg transition-transform cursor-pointer"
+            className="virtual-key flex-1 min-w-[26px] max-w-[46px] h-9.5 sm:h-11 bg-white hover:bg-stone-100 active:bg-amber-200 active:scale-95 font-bold text-stone-900 rounded-lg border border-stone-300 shadow-xs flex items-center justify-center text-sm sm:text-base transition-transform cursor-pointer"
           >
             {key}
           </button>
@@ -114,9 +155,9 @@ export const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({
           type="button"
           onPointerDown={(e) => handleKeyTrigger(e, onBackspace)}
           title="Borrar letra"
-          className="virtual-key flex-[1.2] min-w-[40px] max-w-[62px] h-11 sm:h-12 bg-stone-200 hover:bg-stone-300 active:bg-rose-200 active:scale-95 text-stone-800 rounded-lg border border-stone-300 shadow-xs flex items-center justify-center cursor-pointer transition-transform"
+          className="virtual-key flex-[1.2] min-w-[36px] max-w-[56px] h-9.5 sm:h-11 bg-stone-200 hover:bg-stone-300 active:bg-rose-200 active:scale-95 text-stone-800 rounded-lg border border-stone-300 shadow-xs flex items-center justify-center cursor-pointer transition-transform"
         >
-          <Delete className="w-4 h-4 sm:w-5 sm:h-5 text-stone-700" />
+          <Delete className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-stone-700" />
         </button>
 
         {onNextClue && (
@@ -124,7 +165,7 @@ export const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({
             type="button"
             onPointerDown={(e) => handleKeyTrigger(e, onNextClue)}
             title="Siguiente pista"
-            className="virtual-key flex-[1.1] min-w-[36px] max-w-[56px] h-11 sm:h-12 bg-amber-500 hover:bg-amber-600 active:bg-amber-700 active:scale-95 text-white font-bold rounded-lg border border-amber-600 shadow-xs flex items-center justify-center cursor-pointer transition-transform"
+            className="virtual-key flex-[1.1] min-w-[34px] max-w-[50px] h-9.5 sm:h-11 bg-amber-500 hover:bg-amber-600 active:bg-amber-700 active:scale-95 text-white font-bold rounded-lg border border-amber-600 shadow-xs flex items-center justify-center cursor-pointer transition-transform"
           >
             <CornerDownLeft className="w-4 h-4" />
           </button>
@@ -133,4 +174,5 @@ export const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({
     </div>
   );
 };
+
 
